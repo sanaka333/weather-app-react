@@ -13,6 +13,8 @@ import SnowyVideo from './assets/Snowy.mp4';
 import DrizzleVideo from './assets/Drizzle.mp4';
 import MistyVideo from './assets/Misty.mp4';
 
+const API_BASE_URL = process.env.REACT_APP_API_URL || "http://127.0.0.1:5000";
+
 // Main application component
 function App() {
 
@@ -98,7 +100,7 @@ function App() {
       try{
         // Fetch geocode (lat/lon) for entered location
         const geoRes = await axios.get(
-          `http://127.0.0.1:5000/geocode?location=${location}`
+          `${API_BASE_URL}/geocode?location=${location}`
         );
 
         // Extract the first result from the geocode API response
@@ -109,7 +111,7 @@ function App() {
 
         // Fetch 5-day forecast using lat/lon and unit
         const forecastRes = await axios.get(
-          `http://127.0.0.1:5000/forecast?lat=${geo.lat}&lon=${geo.lon}&unit=${unit}`
+          `${API_BASE_URL}/forecast?lat=${geo.lat}&lon=${geo.lon}&unit=${unit}`
         );
 
         // Clean up forecast data → 1 entry per day
@@ -117,7 +119,7 @@ function App() {
 
         // Fetch current weather data
         const weatherRes = await axios.get(
-          `http://127.0.0.1:5000/weather?lat=${geo.lat}&lon=${geo.lon}&unit=${unit}`
+          `${API_BASE_URL}/weather?lat=${geo.lat}&lon=${geo.lon}&unit=${unit}`
         );
 
         // Update state with current weather
