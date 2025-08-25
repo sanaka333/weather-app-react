@@ -181,8 +181,6 @@ const cityName = (data?.name ?? data?.city?.name ?? '');
 // Unique key for selecting background video (e.g., "Sunny-London")
 const videoKey = `${condition}-${cityName}`;
 
-const normalizeIcon = (code) => (code ? code.replace('n', 'd') : code);
-
   return (
     // Outer container for the app, adding the weather condition as a CSS class if it exists
     <div className={`app ${condition ? condition : ""}`}>
@@ -280,7 +278,7 @@ const normalizeIcon = (code) => (code ? code.replace('n', 'd') : code);
 
               <img src={`https://openweathermap.org/img/wn/${item?.weather?.[0]?.icon}@2x.png`} alt="icon" />
               {/* Weather icon image from OpenWeatherMap */}
-              
+
             </div>
           ))}
         </div>
