@@ -31,19 +31,19 @@ cd weather-app-react
 # 2. Install frontend dependencies
 npm install
 
-# 3. Start the React frontend
-npm start
-
-# 4. Go to the backend folder and install dependencies
+# 3. Go to the backend folder and install dependencies
 cd weather-app-backend
 npm install
 
-# 5. Create a .env file in weather-app-backend/ with:
+# 4. Create a .env file in weather-app-backend/ with:
 OPENWEATHER_API_KEY=your_api_key_here
 PORT=5000
 
-# 6. Start the backend server
-npm start
+# 5. Go back to the project root
+cd ..
+
+# 6. Start both frontend and backend together
+npm run start:both
 
 ```
 ---
