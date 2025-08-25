@@ -45,7 +45,7 @@ cd ..
 ---
 ## Running the App:
 
-1. From the project root, run:
+From the project root, run:
    ```bash
    npm run start:both
    ```
