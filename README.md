@@ -41,10 +41,6 @@ PORT=5000
 
 # 5. Go back to the project root
 cd ..
-
-# 6. Start both frontend and backend together
-npm run start:both
-
 ```
 ---
 ## Running the App:
