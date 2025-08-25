@@ -1,0 +1,38 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# Node / package managers
+node_modules/
+pnpm-lock.yaml
+yarn.lock
+package-lock.json
+
+# Build output
+dist/
+build/
+.next/
+out/
+
+# Local env & secrets
+.env
+.env.*
+!.env.example
+
+# Logs & cache
+*.log
+.cache/
+coverage/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+*.swp
+
+# If your project is split into client/server:
+client/node_modules/
+client/build/
+server/node_modules/
+server/dist/
+
+# TypeScript
+*.tsbuildinfo

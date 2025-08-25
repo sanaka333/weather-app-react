@@ -1,0 +1,279 @@
+/* Import a Google Font called "Outfit" with weights 100-900 */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
+
+/* Apply these rules to every element (*) on the page */
+/* Reset margin, padding, and set box-sizing globally */
+*{
+  box-sizing: border-box; /* Include padding + border in the element's total width/height */
+  margin: 0; /* Remove all default margins */
+  padding: 0; /* Remove all default padding */
+}
+
+/* Style applied to the body element */
+body {
+  margin: 0; /* Remove default margin around the body */
+
+  font-family: 'Outfit', 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif; /* App font stack with fallbacks */
+  
+  -webkit-font-smoothing: antialiased; /* Smooth fonts in Chrome/Safari */
+  -moz-osx-font-smoothing: grayscale; /* Smooth fonts in Firefox on macOS */
+}
+
+/* Style for <code> elements */
+code {
+  /* Use monospace fonts for code text */
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* Style for <p> (paragraph) elements */
+p{
+  font-size: 1.6rem; /* Make text 1.6 times the root font size (default font size of the page) */
+}
+
+/* Style for <h1> (heading 1) elements */
+h1{
+  font-size: 6rem; /* Make the heading text very large (6x the root font size) */
+}
+
+.app{
+  width: 100%; /* The app container takes up the full width of the page */
+  min-height: 100vh; /* The viewport is the visible area of the browser window (what you see without scrolling).
+                        This makes the element at least as tall as the whole screen (viewport). If content is bigger, it will grow taller. */
+  position: relative;   /* Makes .app the "reference" element 
+                            → any absolute elements inside will move relative to this box */
+  background-color: rgba(0,0,0,0.4);  /* Adds a see-through black layer (40% transparent) to slightly darken the background, 
+                                            so white text on top is easier to read */
+  color: #fff;  /* Sets all text inside to white */
+}
+
+/* .app::before adds a full-size background image behind the main app content */
+.app:before{
+  content: ''; /* Creates an empty pseudo-element inside .app */
+  background: url('./assets/sunset.jpg') no-repeat center center /cover;  /* Full-size centered background image */
+  position: absolute;  /* Positioned relative to .app */
+  width: 100%;         /* Stretch across the full width of .app */
+  height: 100%;        /* Stretch across the full height of .app */
+  top: 0;              /* Aligns the child’s top edge with the parent’s top edge */
+  left: 0;             /* Aligns the child’s left edge with the parent’s left edge */
+  z-index: -1;         /* Place it behind the content of .app (so text is visible on top) */
+}
+
+/* Selects any element with class "search" that is inside an element with class "app" */
+.search{
+  text-align: center; /* Center text and inline children (input, button) */
+  padding: 1rem; /* Inner spacing on all sides (1rem = root font size) */
+  margin-bottom: 3rem; /* Space below to separate from next section */
+}
+
+/* Style input fields inside .app */
+input{
+  padding: .7rem 1.5rem; /* Inner spacing: top/bottom .7rem, sides 1.5rem */
+  font-size: 1.2rem; /* Make the input text a bit larger */
+  border-radius: 25px; /* Rounded corners (pill-like shape) */
+  border: 1px solid rgba(255,255,255,0.8); /* 1px semi-transparent white border */
+  background: rgba(255,255,255,0.5); /* Translucent white background so the page/bg shows through */
+  color: #f8f8f8;  /* Very light text color inside the input */
+}
+
+/* Style for placeholder text inside input/textarea */
+::placeholder{
+  color: #f8f8f8; /* Sets the text color to a very light gray (almost white) */
+}
+
+/* Container for main app content */
+.container{
+  max-width: 700px;  /* sets the maximum width of the container */
+  margin: auto; /* Centers by splitting leftover space equally on left and right */
+  padding: 0 1rem; /* Inner spacing: 0 top/bottom, 1rem sides */
+  position: relative;  /* Reference point for absolutely positioned children */
+  display: flex;  /* Enable flexbox layout */
+  flex-direction: column; /* Stacks child elements vertically */
+  justify-content: flex-start; /* Aligns children at the top of the container */
+  padding-bottom: 2rem; /* Adds extra space at the bottom inside */
+  min-height: 100vh;  /* Ensures the container is at least the full height of the viewport */
+}
+
+.top{
+  width: 100%; /* Make this element span the full width of its parent */
+  margin: 1rem auto; /* 1rem top & bottom margin, auto left & right */
+}
+
+.description{
+  position: relative; /* Allow child absolute elements to position relative to this box */
+  margin-top: 15px;  /* Add 15px of space above this element */
+}
+
+.bottom{
+  display: flex; /* Make this a flex container so its children lay out in a row/column */
+  flex-direction: row; /* Place children left->right (this is the default for flex) */
+  justify-content: space-evenly; /* Evenly distribute children with equal space around each item */
+  text-align: center; /* Center text inside each child (doesn't move the flex items themselves) */
+  width: 100%; /* Make the bar span the full width of its parent */
+  margin: 1rem auto; /* 1rem space above/below; auto left/right */
+  padding: 1rem; /* Inner spacing on all sides */
+  border-radius: 12px; /* Rounded corners */
+  background-color: rgba(255,255,255,0.5); /* Semi-transparent white background */
+}
+
+.bold{
+  font-weight: 700; /* Makes the text bold (700 = bold weight) */
+}
+
+.background-video{
+  position: fixed; /* Pin the video to the viewport so it stays put even when you scroll */
+  top: 0; /* Align its top edge with the top of the screen */
+  left: 0; /* Align its left edge with the left of the screen */
+  width: 100vw; /* The viewport is the visible area of the browser window (what you see without scrolling). 
+                   Make it as wide as the viewport (full screen width) */
+  height: 100vh; /* The viewport is the visible area of the browser window (what you see without scrolling).
+                   Make it as tall as the viewport (full screen height) */
+  object-fit: cover;  /* Scale/crop the video so it fills the box without distortion */
+  z-index: -1; /* Place it behind all other content */
+  opacity: 0; /* Start fully transparent (invisible) */
+  transition: opacity 1s ease-in-out; /* Smoothly fade when the opacity value changes */
+}
+
+video {
+  position: fixed; /* Stick to the viewport; stays put while you scroll */
+  top: 0; /* Align the top edge with the top of the screen */
+  left: 0; /* Align the left edge with the left of the screen */
+  z-index: -1; /* Send the video behind other page content */
+  width: 100vw; /* Make it as wide as the viewport (full screen width) */
+  height: 100vh; /* Make it as tall as the viewport (full screen height) */
+  object-fit: cover; /* object-fit: cover = scale the video/image to completely fill its box, 
+                        cropping edges if needed, without distorting it */
+}
+
+.background-video.loaded {
+  opacity: 1; /* Make the video fully visible once the "loaded" class is added */
+}
+
+/* .app.Clear targets an element that has BOTH classes "app" and "Clear" (no space = same element) */
+.app.Clear{
+  position: relative; /* element stays in normal position but can be shifted, also serves as reference for absolutely positioned children */
+  min-height: 100vh;  /* make it at least as tall as the screen; it can grow taller if content needs it */
+}
+
+.app.Clouds{
+  position: relative; /* element stays in normal position but can be shifted, also serves as reference for absolutely positioned children */
+  min-height: 100vh;  /* make it at least as tall as the screen; it can grow taller if content needs it */
+}
+
+.app.Rain{
+  position: relative; /* element stays in normal position but can be shifted, also serves as reference for absolutely positioned children */
+  min-height: 100vh;  /* make it at least as tall as the screen; it can grow taller if content needs it */
+}
+
+.app.Thunderstorm{
+  position: relative; /* element stays in normal position but can be shifted, also serves as reference for absolutely positioned children */
+  min-height: 100vh;  /* make it at least as tall as the screen; it can grow taller if content needs it */
+}
+
+.app.Snow{
+  position: relative; /* element stays in normal position but can be shifted, also serves as reference for absolutely positioned children */
+  min-height: 100vh;  /* make it at least as tall as the screen; it can grow taller if content needs it */
+}
+
+.app.Drizzle{
+  position: relative; /* element stays in normal position but can be shifted, also serves as reference for absolutely positioned children */
+  min-height: 100vh;  /* make it at least as tall as the screen; it can grow taller if content needs it */
+}
+
+.app.Mist{
+  position: relative; /* element stays in normal position but can be shifted, also serves as reference for absolutely positioned children */
+  min-height: 100vh;  /* make it at least as tall as the screen; it can grow taller if content needs it */
+}
+
+.forecast{
+  display: flex;   /* Make this a flex container */
+  flex-direction: row;  /* Lay out children left→right (flex main axis is horizontal) */
+  flex-wrap: nowrap; /* Keep all flex items on one line (similar to inline, but with full flexbox control) */
+  overflow: visible;  /* Let overflowing content show outside the box */
+  justify-content: center; /* Center the flex items along the main axis (horizontally here) */
+  max-height: unset; /* Remove any max-height limit; use natural height */
+  gap: 1rem; /* 1rem space between flex items */
+  padding: 1rem 0; /* 1rem padding top/bottom, 0 left/right */
+  margin-top: 1rem; /* Add space above the whole forecast row */
+}
+
+.forecast-item{
+  flex: 1 1 150px; /* Flexible card: base 150px, can grow/shrink */         
+  background: rgba(255,255,255,0.5); /* semi-transparent white background panel */
+  border-radius: 10px; /* rounded corners */
+  padding: 1rem; /* inner spacing on all sides */
+  min-width: 200px; /* don’t let a card get narrower than 200px (even if flex wants to shrink it) */
+  text-align: center; /* center text inside the card */
+  color: white; /* make the text white */
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2); /* soft shadow for depth (x,y,blur,color) */
+}
+
+@media (max-width: 768px) { /* Apply these rules on screens 768px wide or smaller (tablet/mobile) */
+  .container{
+    max-width: 100%; /* Let the container span the full screen width */
+    height: auto; /* Let content decide the height (no fixed/min height here) */
+    top: 5%; /* Push the container down 5% from the top */
+    padding: 0 1rem; /* No padding top/bottom, 1rem on left/right */
+    overflow-y: auto;   /* Add a vertical scrollbar if content is taller than the container */
+  }
+
+  h1{
+    font-size: 3rem; /* Larger heading size for small screens (easy to read) */
+  }
+
+  p{
+    font-size: 1.2rem;  /* Slightly larger paragraph text for readability */
+  }
+
+  .forecast{
+    flex-direction: column;  /* Stack forecast items vertically instead of in a row */
+    align-items: center;  /* Center those stacked items horizontally */
+  }
+
+  .forecast-item{
+    width: 90%;   /* Each forecast item takes up 90% of its parent’s width */
+    min-width: unset;  /* Remove any minimum width that was set earlier */
+    margin-bottom: 1rem; /* Add space below each forecast item */
+  }
+
+  .bottom{
+    flex-direction: row; /* Lay out children in a row (left → right) */
+    gap: 1rem; /* Space of 1rem between each child */
+    padding: 1rem; /* Add 1rem space inside on all sides */
+  }
+
+  .search input{
+    width: 90%;   /* Make the search input box 90% of its parent’s width */
+    font-size: 1rem;  /* Set input text size to 1rem (standard readable size) */
+  }
+}
+
+/* Apply to BOTH <html> and <body> elements */
+body, html{
+  overflow-x: hidden; /* Hide horizontal scrollbar; cut off content that spills sideways */
+  margin: 0; /* Remove default browser margin around the page */
+  padding: 0; /* Remove default padding */
+  height: auto; /* Let height be determined by content */
+  min-height: 100%; /* Ensure page is at least full viewport height */
+  overflow-y: auto; /* Show vertical scrollbar only when needed */
+}
+
+.unit-toggle-button {
+  background: transparent; /* No fill color; see background behind it */
+  border: 2px solid white; /* 2px white outline */
+  border-radius: 6px; /* Slightly rounded corners */
+  color: white; /* Button text is white */
+  font-weight: bold; /* Make the label bold */
+  padding: 4px 10px; /* 4px top/bottom, 10px left/right inner space */
+  margin-top: 8px; /* Space above the button */
+  cursor: pointer; /* Show hand cursor on hover (looks clickable) */
+  font-size: 0.9rem; /* Slightly smaller-than-base text size */
+  transition: background 0.3s; /* Smoothly animate background color changes over 0.3s */
+}
+
+/* Hover state for the toggle button */
+.unit-toggle-button:hover {
+  background: rgba(255, 255, 255, 0.1); /* Light, translucent white on hover for feedback */
+}
