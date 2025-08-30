@@ -4,6 +4,12 @@ import React, {useState} from 'react'
 // HTTP client for API requests
 import axios from 'axios';
 
+// React Query hook
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
+
+// Import loading spinner component for showing loading states
+import { ClipLoader } from 'react-spinners';
+
 // Background video assets for different weather conditions
 import ClearVideo from './assets/Clear.mp4';
 import CloudyVideo from './assets/Cloudy.mp4';
@@ -16,17 +22,11 @@ import MistyVideo from './assets/Misty.mp4';
 // Main application component
 function App() {
 
-  // State: stores current weather data from the API
-  const [data, setData] = useState({})
-
   // State: stores the city name entered by the user
   const [location, setLocation] = useState('')
 
   // State: stores detailed location info (lat, lon, timezone, etc.)
   const [locationInfo, setLocationInfo] = useState({});
-
-   // State: stores 5-day forecast data in an array
-  const [forecastData, setForecastData] = useState([]);
 
   // State: tracks whether the background video has finished loading
   const [videoLoaded, setVideoLoaded] = useState(false);
@@ -34,21 +34,45 @@ function App() {
   // State: temperature unit ('imperial' = °F, 'metric' = °C)
   const [unit, setUnit] = useState('imperial');
 
-  // Convert temperature based on unit setting
-  // - imperial: return Fahrenheit as-is
-  // - metric: convert to Celsius
-  const toTemp = (f)   => unit === 'imperial' ? f : (f - 32) * (5/9);   // F -> C
-
-  // Convert wind speed based on unit setting
-  // - imperial: mph
-  // - metric: m/s (mph ÷ 2.23694)
-  const toWind = (mph) => unit === 'imperial' ? mph : mph / 2.23694;      // MPH -> m/s
-
   // Temperature unit symbol (°F or °C)
   const unitSymbol = unit === 'imperial' ? '°F' : '°C';
 
   // Wind speed unit label (MPH or m/s)
   const windUnit  = unit === 'imperial' ? 'MPH' : 'm/s';
+
+  // Query current weather data with React Query
+  // - Uses locationInfo (lat/lon) + selected unit (metric/imperial)
+  // - Caches results for 1 minute (staleTime)
+  // - Keeps previous data visible while fetching new data (placeholderData)
+  // - Fetch is only enabled after geocoding provides valid coordinates
+  const { data: weather, isLoading: weatherLoading, isError: weatherError } = useQuery({
+    queryKey: ['weather', locationInfo?.lat, locationInfo?.lon, unit],
+    queryFn: async () => {
+      const res = await axios.get(
+        `http://127.0.0.1:5000/weather?lat=${locationInfo.lat}&lon=${locationInfo.lon}&unit=${unit}`
+      );
+      return res.data; // axios already parsed JSON
+    },
+    enabled: Boolean(locationInfo?.lat && locationInfo?.lon), // only fetch when coords are ready
+    staleTime: 60_000, // 1 minute cache
+    refetchOnWindowFocus: false, // don't auto-refetch when user switches back to the tab
+    placeholderData: keepPreviousData, // keeps old weather until new fetch completes
+  });
+
+  // Fetch and cache 5-day forecast data (reduced to daily) with React Query
+  const { data: forecastData, isLoading: forecastLoading, isError: forecastError } = useQuery({
+      queryKey: ['forecast', locationInfo?.lat, locationInfo?.lon, unit],
+      queryFn: async () => {
+        const res = await axios.get(
+          `http://127.0.0.1:5000/forecast?lat=${locationInfo.lat}&lon=${locationInfo.lon}&unit=${unit}`
+        );
+        return getDailyForecast(res.data.list); // helper that reduces 3hr → daily
+      },
+      enabled: Boolean(locationInfo?.lat && locationInfo?.lon), // only run query once lat/lon are set
+      staleTime: 60_000, // cache forecast data for 1 minute before refetching
+      refetchOnWindowFocus: false, // don't auto-refetch when user switches back to the tab
+      placeholderData: keepPreviousData, // keeps old weather until new fetch completes
+  });
 
   // Extract one forecast entry per day from API list
   // Reduces 3-hour interval data into a daily summary
@@ -96,7 +120,7 @@ function App() {
       setVideoLoaded(false);
       
       try{
-        // Fetch geocode (lat/lon) for entered location
+        // Geocode the entered location
         const geoRes = await axios.get(
           `http://127.0.0.1:5000/geocode?location=${location}`
         );
@@ -104,24 +128,8 @@ function App() {
         // Extract the first result from the geocode API response
         const geo = geoRes.data[0];
 
-        // Update state with geocode info
+        // save lat/lon → triggers React Query fetch
         setLocationInfo(geo);
-
-        // Fetch 5-day forecast using lat/lon and unit
-        const forecastRes = await axios.get(
-          `http://127.0.0.1:5000/forecast?lat=${geo.lat}&lon=${geo.lon}&unit=${unit}`
-        );
-
-        // Clean up forecast data → 1 entry per day
-        setForecastData(getDailyForecast(forecastRes.data.list));
-
-        // Fetch current weather data
-        const weatherRes = await axios.get(
-          `http://127.0.0.1:5000/weather?lat=${geo.lat}&lon=${geo.lon}&unit=${unit}`
-        );
-
-        // Update state with current weather
-        setData(weatherRes.data);
 
       } catch(err){
           // If there was an error in any of the API calls:
@@ -138,13 +146,13 @@ function App() {
     }
   }
 
-// Get main weather condition (or empty string if not available)
-const condition = data.weather ? data.weather[0].main : '';
+// main condition (e.g., "Clear", "Rain")
+const condition = weather?.weather?.[0]?.main || '';
 
 // Function that returns a weather description with an emoji based on the condition
 const getDescription = (weather) => {
   
-  // If 'weather' does not exist OR the first weather object doesn't exist, return an empty string
+  // If 'weather' array does not exist OR the first weather object doesn't exist, return an empty string
   if(!weather || !weather[0]){
     return '';
   }
@@ -176,7 +184,7 @@ const videoMap = {
 }
 
 // Safely get city name (fallback to empty string if missing)
-const cityName = (data?.name ?? data?.city?.name ?? '');
+const cityName = (weather?.name ?? weather?.city?.name ?? '');
 
 // Unique key for selecting background video (e.g., "Sunny-London")
 const videoKey = `${condition}-${cityName}`;
@@ -200,6 +208,19 @@ const videoKey = `${condition}-${cityName}`;
         <source src={videoMap[condition]} type="video/mp4" />
         </video>
         )}
+
+        {/* Show a loading spinner and message while the forecast data is being fetched */}
+        {forecastLoading && (
+          <div className="loading-inline">
+            <ClipLoader size={32} color="#fff" />
+            <span>Loading forecast…</span>
+          </div>
+        )}
+
+        {/* Error UI */}
+        {weatherError && <div className="error">Couldn’t load weather.</div>}
+        {forecastError && <div className="error">Couldn’t load forecast.</div>}
+
       
       {/* Search box container */}
       <div className="search">
@@ -232,17 +253,25 @@ const videoKey = `${condition}-${cityName}`;
             </div>
             {/* Container for the current temperature section */}
             <div className="temp">
+
+              {/* Show spinner if weather is still loading */}
+              {weatherLoading && (
+                <div className="loading-inline">
+                  <ClipLoader size={32} color="#fff" />
+                  <span>Loading weather…</span>
+                </div>
+              )}
+              
               {/* Only show temperature if data.main exists (means API has returned weather data) */}
-              {data.main && (
+              {!weatherLoading && weather?.main && (
               <>
-                {/* Current temperature (rounded, with correct unit) */}
-                <h1>{toTemp(data.main.temp).toFixed(1)} {unitSymbol}</h1>
+                 {/* Always show temperature*/}
+                  {weather?.main && (
+                    <h1>{Number(weather.main.temp).toFixed(1)} {unitSymbol}</h1>
+                  )}
 
                  {/* Button to toggle between Celsius and Fahrenheit */}
-                <button
-                  className="unit-toggle-button"
-                  onClick={() => setUnit(prev => (prev === 'imperial' ? 'metric' : 'imperial'))}
-                >
+                <button className="unit-toggle-button" onClick={() => setUnit(prev => (prev === 'imperial' ? 'metric' : 'imperial'))}>
 
                 {/* Change button label depending on current unit */}
                 {unit === 'imperial' ? 'Convert to °C' : 'Convert to °F'}
@@ -254,14 +283,14 @@ const videoKey = `${condition}-${cityName}`;
             {/* Container for showing the weather description */}
             <div className="description">
               {/* Show weather description if available */}
-              {data.weather ? <p>{getDescription(data.weather)}</p> : null}
+              {weather?.weather ? <p>{getDescription(weather.weather)}</p> : null}
             </div>
           </div>
         
         <div className="forecast">
           {/* "forecast" container to hold all forecast items */}
 
-          {forecastData.map((item, index) => (
+          {(forecastData || []).map((item, index) => (
             // Loop through forecastData array
 
             <div key={index} className='forecast-item'>
@@ -270,10 +299,10 @@ const videoKey = `${condition}-${cityName}`;
               <p>{formatDay(item.dt_txt)}</p>
                {/* Show the day (formatted from "dt_txt" which is a date/time string) */}
 
-              <p>{toTemp(item.main.temp).toFixed(1)}{unitSymbol}</p>
+              <p>{Number(item.main.temp).toFixed(1)}{unitSymbol}</p>
               {/* Convert the temperature from API using toTemp(), round to 1 decimal, then add °C or °F */}
 
-              <p>{capitalizeWords(item.weather[0].description)}</p>
+              <p>{capitalizeWords(item.weather?.[0]?.description || '')}</p>
               {/* Show the weather description (e.g., "clear sky") with each word capitalized */}
 
               <img src={`https://openweathermap.org/img/wn/${item?.weather?.[0]?.icon}@2x.png`} alt="icon" />
@@ -284,31 +313,31 @@ const videoKey = `${condition}-${cityName}`;
         </div>
 
 {/* Only run this section if data.name is not undefined (means we have location data) */}
-{data.name !== undefined &&
+  {weather?.name !== undefined &&
     // Container for the bottom section of weather details
     <div className="bottom">
 
             {/* Feels Like Temperature */}
             <div className="feels">
-              {data.main ? <p>{toTemp(data.main.feels_like).toFixed(1)} {unitSymbol}</p> : null}
+              {weather?.main ? <p>{Number(weather.main.feels_like).toFixed(1)} {unitSymbol}</p> : null}
               <p className='bold'>Feels Like</p> 
             </div>
 
             {/* Humidity*/}
             <div className="humidity">
               {/* If data.main exists, show humidity percentage */}
-              {data.main ? <p>{data.main.humidity}%</p> : null} 
+              {weather?.main ? <p>{weather.main.humidity}%</p> : null} 
               <p className='bold'>Humidity</p> 
             </div>
 
             {/* Wind Speed */}
             <div className="wind">
-              {data.wind ? <p>{toWind(data.wind.speed).toFixed(1)} {windUnit}</p> : null}
+              {weather?.wind ? <p>{Number(weather.wind.speed).toFixed(1)} {windUnit}</p> : null}
               <p className='bold'>Wind Speed</p> 
             </div>
     </div>
-}
-    </div>
+  }
+  </div>
 </div>
   )};
 
