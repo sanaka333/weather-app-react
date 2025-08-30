@@ -266,9 +266,7 @@ const videoKey = `${condition}-${cityName}`;
               {!weatherLoading && weather?.main && (
               <>
                  {/* Always show temperature*/}
-                  {weather?.main && (
-                    <h1>{Number(weather.main.temp).toFixed(1)} {unitSymbol}</h1>
-                  )}
+                 <h1>{Number(weather.main.temp).toFixed(1)} {unitSymbol}</h1>
 
                  {/* Button to toggle between Celsius and Fahrenheit */}
                 <button className="unit-toggle-button" onClick={() => setUnit(prev => (prev === 'imperial' ? 'metric' : 'imperial'))}>
