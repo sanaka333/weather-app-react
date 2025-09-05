@@ -36,3 +36,17 @@ server/dist/
 
 # TypeScript
 *.tsbuildinfo
+
+# Ignore large dataset and model files
+*.csv
+*.joblib
+
+# Ignore Python virtual environment
+.venv/
+
+# Ignore backend build artifacts
+__pycache__/
+*.pyc
+
+"weather-app-backend/data/hourly_ml.csv" 
+"weather-app-backend/models/rain_clf.joblib" 
