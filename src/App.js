@@ -19,6 +19,8 @@ import SnowyVideo from './assets/Snowy.mp4';
 import DrizzleVideo from './assets/Drizzle.mp4';
 import MistyVideo from './assets/Misty.mp4';
 
+import RainPredictor from './RainPredictor';
+
 // Main application component
 function App() {
 
@@ -40,6 +42,8 @@ function App() {
   // Wind speed unit label (MPH or m/s)
   const windUnit  = unit === 'imperial' ? 'MPH' : 'm/s';
 
+  const [showRainPredictor, setShowRainPredictor] = useState(false);
+
   // Query current weather data with React Query
   // - Uses locationInfo (lat/lon) + selected unit (metric/imperial)
   // - Caches results for 1 minute (staleTime)
@@ -49,13 +53,13 @@ function App() {
     queryKey: ['weather', locationInfo?.lat, locationInfo?.lon, unit],
     queryFn: async () => {
       const res = await axios.get(
-        `http://127.0.0.1:5000/weather?lat=${locationInfo.lat}&lon=${locationInfo.lon}&unit=${unit}`
+        `http://127.0.0.1:3001/weather?lat=${locationInfo.lat}&lon=${locationInfo.lon}&unit=${unit}`
       );
       return res.data; // axios already parsed JSON
     },
     enabled: Boolean(locationInfo?.lat && locationInfo?.lon), // only fetch when coords are ready
     staleTime: 60_000, // 1 minute cache
-    refetchOnWindowFocus: false, // don't auto-refetch when user switches back to the tab
+    refetchOnWindowFocus: true, // don't auto-refetch when user switches back to the tab
     placeholderData: keepPreviousData, // keeps old weather until new fetch completes
   });
 
@@ -64,13 +68,13 @@ function App() {
       queryKey: ['forecast', locationInfo?.lat, locationInfo?.lon, unit],
       queryFn: async () => {
         const res = await axios.get(
-          `http://127.0.0.1:5000/forecast?lat=${locationInfo.lat}&lon=${locationInfo.lon}&unit=${unit}`
+          `http://127.0.0.1:3001/forecast?lat=${locationInfo.lat}&lon=${locationInfo.lon}&unit=${unit}`
         );
         return getDailyForecast(res.data.list); // helper that reduces 3hr → daily
       },
       enabled: Boolean(locationInfo?.lat && locationInfo?.lon), // only run query once lat/lon are set
       staleTime: 60_000, // cache forecast data for 1 minute before refetching
-      refetchOnWindowFocus: false, // don't auto-refetch when user switches back to the tab
+      refetchOnWindowFocus: true, // don't auto-refetch when user switches back to the tab
       placeholderData: keepPreviousData, // keeps old weather until new fetch completes
   });
 
@@ -122,7 +126,7 @@ function App() {
       try{
         // Geocode the entered location
         const geoRes = await axios.get(
-          `http://127.0.0.1:5000/geocode?location=${location}`
+          `http://127.0.0.1:3001/geocode?location=${location}`
         );
 
         // Extract the first result from the geocode API response
@@ -130,6 +134,9 @@ function App() {
 
         // save lat/lon → triggers React Query fetch
         setLocationInfo(geo);
+
+         // Only show RainPredictor after successful search
+        setShowRainPredictor(true);
 
       } catch(err){
           // If there was an error in any of the API calls:
@@ -266,7 +273,9 @@ const videoKey = `${condition}-${cityName}`;
               {!weatherLoading && weather?.main && (
               <>
                  {/* Always show temperature*/}
-                 <h1>{Number(weather.main.temp).toFixed(1)} {unitSymbol}</h1>
+                 <h1>
+                  {weather ? `${Number(weather.main.temp).toFixed(1)} ${unitSymbol}` : "Loading..."}
+                </h1>
 
                  {/* Button to toggle between Celsius and Fahrenheit */}
                 <button className="unit-toggle-button" onClick={() => setUnit(prev => (prev === 'imperial' ? 'metric' : 'imperial'))}>
@@ -283,6 +292,11 @@ const videoKey = `${condition}-${cityName}`;
               {/* Show weather description if available */}
               {weather?.weather ? <p>{getDescription(weather.weather)}</p> : null}
             </div>
+
+            {/* Show RainPredictor only after a valid search */}
+            {showRainPredictor && (
+            <RainPredictor city={locationInfo.name} weather={weather} />
+            )}
           </div>
         
         <div className="forecast">
@@ -340,6 +354,8 @@ const videoKey = `${condition}-${cityName}`;
   )};
 
 export default App; // Export App component as default (import without curly braces)
+
+
 
 
 

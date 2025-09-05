@@ -5,7 +5,7 @@ const cors = require('cors'); // Import CORS middleware (allow requests from oth
 require('dotenv').config();  // Load environment variables from .env 
 
 const app = express();  // Create an Express app instance
-const PORT = 5000; // Port number this server will use
+const PORT = 3001; // Port number this server will use
 
 app.use(cors()); // Enable CORS for all routes
 app.use(express.json()); // Parse JSON bodies on incoming requests
@@ -33,10 +33,12 @@ app.get('/geocode', async (req, res) => { // Define a GET route at /geocode (asy
 app.get('/forecast', async (req, res) => {
 
   // Extract 'lat' (latitude) and 'lon' (longitude) from the request query parameters.
-  const { lat, lon } = req.query;
+  const { lat, lon, unit } = req.query;
 
   // If either 'lat' or 'lon' is missing, immediately return a 400 Bad Request error response.
   if (!lat || !lon) return res.status(400).json({ error: 'lat and lon are required' });
+
+  console.log("Fetching weather with units:", unit); // log inside the route
 
   try {
     // Use axios to call the OpenWeatherMap API with the provided latitude and longitude.
@@ -45,7 +47,7 @@ app.get('/forecast', async (req, res) => {
       params: {
         lat,  // Pass latitude from the query
         lon,  // Pass longitude from the query
-        units: 'imperial',  // Use imperial units (Fahrenheit, miles, etc.)                         
+        units: unit,  // Use imperial units (Fahrenheit, miles, etc.)                         
         appid: process.env.OPENWEATHER_API_KEY, // Use API key stored in environment variable
       },
     });
@@ -62,7 +64,7 @@ app.get('/forecast', async (req, res) => {
 app.get('/weather', async (req, res) => {
 
   // Pull latitude and longitude from the query string object (e.g., ?lat=...&lon=...).
-  const { lat, lon } = req.query;
+  const { lat, lon, unit } = req.query;
 
   // Guard clause: if either value is missing, stop here and send 400 Bad Request.
   // 'return' ensures the rest of the handler does not run.
@@ -76,7 +78,7 @@ app.get('/weather', async (req, res) => {
       params: {
         lat,      // forward the provided latitude
         lon,      // forward the provided longitude
-        units: 'imperial',   // use Fahrenheit/mph (always imperial)
+        units: unit,   // use Fahrenheit/mph (always imperial)
         appid: process.env.OPENWEATHER_API_KEY,  // API key read from environment
       },
     });
@@ -99,9 +101,10 @@ app.listen(PORT, () => {
 
     // Log a message to the terminal once the server is running successfully
     // Using a template string (backticks) so we can insert the PORT value dynamically
-    // Example output: "✅ Server running on http://localhost:5000"
-    console.log(`✅ Server running on http://localhost:${PORT}`);
+    // Example output: "Server running on http://localhost:3001"
+    console.log(`Server running on http://localhost:${PORT}`);
 });
+
 
 
 
