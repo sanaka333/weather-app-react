@@ -30,15 +30,15 @@ The app integrates a rain prediction model built with scikit-learn.
   - Converted weather descriptions into binary rain indicators
   - Engineered future rain labels (will it rain within the next 1–3 hours)
   - Added time-based features (month, hour)
-- **Model:** Random Forest Classifier with class balancing (class_weight="balanced_subsample") to handle rain vs. no-rain imbalance
+- **Model:** Random Forest Classifier with class balancing (class_weight="balanced_subsample") and stratified train/test split (stratify=y) to handle rain vs. no-rain imbalance
 - **Workflow:**
-  - Weather features from OpenWeatherMap API are passed to the ML backend.
+  - Frontend collects weather features from OpenWeatherMap API and sends them to the ML backend.
   - The Random Forest model predicts if it will rain soon.
   - Prediction is displayed alongside live weather data.
 
 ## Limitations & Future Work
 - The ML model uses a historical Kaggle dataset, so predictions may not always match current weather.
-- Goal is to show the end-to-end ML pipeline, not perfect accuracy.
+- Goal is to demonstrate the full ML workflow, not perfect accuracy.
 - Future work: train on newer data and try more advanced models.
 
 ---
