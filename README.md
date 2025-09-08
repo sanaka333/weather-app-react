@@ -10,14 +10,36 @@ This is a weather application that utilizes the **OpenWeatherMap REST API** to d
 - 5-day forecast
 - Live video backgrounds that adapt to weather conditions
 - Node.js backend for API key protection
+- Machine Learning Rain Predictor (trained on Kaggle climate dataset with Random Forest)
 
 ---
 
 ## Tech Stack
 - **Frontend:** React (Create React App), Axios, CSS  
 - **Backend:** Node.js + Express (for secure API proxying)  
-- **API:** [OpenWeatherMap](https://openweathermap.org/api)  
-- **Version Control:** Git & GitHub  
+- **API:** [OpenWeatherMap](https://openweathermap.org/api)
+- **Machine Learning:** Python, Pandas, Scikit-learn (Random Forest Classifier) trained on Kaggle climate dataset
+- **Version Control:** Git & GitHub
+
+---
+## Machine Learning Component
+The app integrates a rain prediction model built with scikit-learn.
+- **Dataset:** Historical global climate/weather dataset from Kaggle
+- **Preprocessing:**
+  - Merged multiple weather features (temperature, humidity, pressure, wind speed, etc.)
+  - Converted weather descriptions into binary rain indicators
+  - Engineered future rain labels (will it rain within the next 1–3 hours)
+  - Added time-based features (month, hour)
+- **Model:** Random Forest Classifier with class balancing (class_weight="balanced_subsample") to handle rain vs. no-rain imbalance
+- **Workflow:**
+  - Weather features from OpenWeatherMap API are passed to the ML backend.
+  - The Random Forest model predicts if it will rain soon.
+  - Prediction is displayed alongside live weather data.
+
+## Limitations & Future Work
+- The ML model uses a historical Kaggle dataset, so predictions may not always match current weather.
+- Goal is to show the end-to-end ML pipeline, not perfect accuracy.
+- Future work: train on newer data and try more advanced models.
 
 ---
 
